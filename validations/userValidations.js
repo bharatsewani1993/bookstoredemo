@@ -11,9 +11,6 @@ const signUpValidations = joi.object().keys({
   phoneNumber: joi.string().required().regex(/^[0-9]{10}$/).messages({
     'string.pattern.base': CONSTANTS.MESSAGES.TEN_DIGIT_NUMBER_ALLOW
   }),
-  termsAndCondition: joi.string().regex(/^[0-1]{1}$/).messages({
-    'string.pattern.base': CONSTANTS.MESSAGES.TERMS_AND_CONDITIONS_ACCEPT_OR_DECLINE
-  }),
   password: joiPassword.string().min(8)
     .max(200)
     .minOfSpecialCharacters(1)

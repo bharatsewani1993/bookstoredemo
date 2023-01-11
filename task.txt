@@ -1,0 +1,42 @@
+# Node.js backend **assignment**
+
+Make the express API server.
+
+Book store. [https://www.amazon.com/books-used-books-textbooks/b?ie=UTF8&node=283155](https://www.amazon.com/books-used-books-textbooks/b?ie=UTF8&node=283155)
+
+1. design the APIs from the above link (amazon books)
+2. make the RDB schema
+    - suppose user type are “seller”, “customer”.
+
+## Condition
+
+- When new customer is created, they get 100 point.
+- Seller can upload their books (points, quantity, cover image required)
+- Customers can buy books by only points
+
+## Required
+
+- Login using JWT(accessToken, refreshToken)
+    - Only one refreshToken should be valid.
+- Necessary APIs
+    - Signup
+    - Signin
+    - Order (customer)
+    - Cancel order (customer)
+    - list of buy (customer)
+    - uploading their books (from seller) with book’s cover image. (save the binary data to database) (seller)
+    - Check their books remaining quantity (seller)
+    - **use typescript for server api is required**
+    - You can make more apis you u It is nesaccery.
+- Database transaction required
+- ES6 required
+- Need API documentations(anything is ok. swagger, markdown. etc..)
+
+## Additional Info
+
+- Just Think normal online book store. amazon books is just reference.
+- There is not limitation of Infrastructure. can use any other 3rd party library if you want
+- **if you familiar Layered architecture use ORM for database access layer**
+- **use Test framework will be better 
+(such as Jest or Mocha and chai for Test Driven Development)**
+- **use Nest.js will be better**

@@ -20,7 +20,9 @@ module.exports = {
         ALL_BOOK_LISTING_FAILED:"Failed to list All books.", 
         INVALID_ORDER_ITEMS:"Invalid order Items.",
         ORDER_CREATION_FAILED:"Order creation Failed.",
-        ORDER_CREATED:"Order created successfully."
+        ORDER_CREATED:"Order created successfully.",
+        INVALID_ORDER_ID:"Invalid order Id.",
+        ORDER_DELETED:"Order Deleted successfully",
     },
 
     ROLE:{      

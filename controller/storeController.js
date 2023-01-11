@@ -58,7 +58,6 @@ const listSellerBooks = async (req,res,next) =>{
                 }
             },
             raw: true,
-            logging:console.log
         });
 
         let remainingQuantity = async function(allBooks, quantity){
@@ -140,19 +139,38 @@ const createOrder = async (req,res,next) =>{
         }
 
         //validate if all book ids are valid..
-        let resultCount = await bookModel.count({
+        let availableStock = await bookModel.findAll({
             where: {
                 id:bookIdArr,
                 active:1,
                 quantity:{
                     [Op.gt]:0,
                 }
-            }
+            },
+            order: [
+                ['id', 'ASC'],
+            ],    
+            raw:true
         })
 
-        if(bookIdArr.length != resultCount){
+        //verify all book ids are valid
+        if(bookIdArr.length != availableStock.length){
             const error = new Error(CONSTANTS.MESSAGES.INVALID_ORDER_ITEMS);
             throw error;
+        } else {
+            //verify quantity of each book if available in stock...
+            orderDetails.sort((a,b)=>{
+                return a.bookId - b.bookId
+            });
+
+            for(let i = 0; i<availableStock.length; i++){
+                if(availableStock[i].quantity >= orderDetails[i].bookQty){
+                    continue;
+                } else {
+                    const error = new Error(CONSTANTS.MESSAGES.INVALID_ORDER_ITEMS);
+                    throw error; 
+                }
+            }          
         }
 
         let orderObj = {
@@ -163,7 +181,6 @@ const createOrder = async (req,res,next) =>{
        
         //insert details in orderItem table...
         let insertArr = [];
-        let responseArr = [];
         for (var i = 0; i < orderDetails.length; i++) {
 
             let tempObj = {
@@ -177,7 +194,28 @@ const createOrder = async (req,res,next) =>{
 
         //save all items related to specific order.
         let orderItems = await orderItemsModel.bulkCreate(insertArr);
+
+        //update the remaining quantity of books in stock.
+        let remainingQty = [];
+
+        //calculate remaining book quantity.
+        for(let i = 0; i<availableStock.length; i++){
+            let tempRemaining = availableStock[i].quantity - orderDetails[i].bookQty
+            remainingQty.push({id:orderDetails[i].bookId, quantity:tempRemaining });
+        }   
         
+        let promiseArr = [];
+        
+        //update database with new quantity.
+        for (let i = 0; i < remainingQty.length; i++) {
+            promiseArr.push(bookModel.update({quantity:remainingQty[i].quantity},
+            {where:{
+                id:remainingQty[i].id
+            }}));
+        }
+
+        await Promise.all(promiseArr);
+
         res.status(200).send({
             success: true,
             data: orderItems,
@@ -188,7 +226,118 @@ const createOrder = async (req,res,next) =>{
         console.log(CATCH_MESSAGES.CREATE_ORDER, err);
         res.status(400).send({
             success:false,
-            message:CONSTANTS.MESSAGES.ORDER_CREATION_FAILED
+            message:CONSTANTS.MESSAGES.INVALID_ORDER_ITEMS
+        });
+    }
+}
+
+const deleteOrder = async (req,res,next) => {
+    try {
+        const customerId = req.body.id;
+        const orderId = req.body.orderId;
+
+        //verify if order belongs to loggedIN customer or not.
+        const verifiedOrder = orderModel.findAll({
+            where:{
+                customerId:customerId,
+                id:orderId,
+                active:1
+            },
+            raw:true
+        });
+
+        if(!verifiedOrder){
+            const error = new Error(CONSTANTS.MESSAGES.INVALID_ORDER_ID);
+            throw error; 
+        }
+
+        //select all order Items from DB and do a soft delete for them.
+                
+        const orderItems = await orderItemsModel.findAll({
+            where:{
+                orderId:orderId,
+                active:1,
+            },
+            order:[
+                ['bookId','asc']
+            ],
+            raw:true
+        });
+        
+        //delete order items
+        await orderItemsModel.update({
+            active:0
+        },{
+            where:{
+                orderId:orderId,
+                active:1
+            }
+        });  
+
+        //update the stock
+
+        //fetch available stock...
+        let bookIdArr = [];
+
+        for (var i = 0; i < orderItems.length; i++) {
+            bookIdArr.push(orderItems[i].bookId);
+        }
+
+        let availableStock = await bookModel.findAll({
+            where: {
+                id:bookIdArr,
+                active:1,
+            },
+            order: [
+                ['id', 'ASC'],
+            ],    
+            raw:true
+        });
+
+
+         //update the remaining quantity of books in stock.
+         let remainingQty = [];
+
+         //calculate new updated book quantity.
+         for(let i = 0; i<availableStock.length; i++){
+             let newRemaining = availableStock[i].quantity + orderItems[i].qty;
+             remainingQty.push({id:availableStock[i].id, quantity:newRemaining });
+         }   
+         
+         let promiseArr = [];
+         
+         //update database with new quantity.
+         for (let i = 0; i < remainingQty.length; i++) {
+             promiseArr.push(bookModel.update({quantity:remainingQty[i].quantity},
+             {where:{
+                 id:remainingQty[i].id
+             }}));
+         }
+ 
+         await Promise.all(promiseArr);   
+
+         //soft delete the order in order table.
+         await orderModel.update({
+            active:0
+         },{
+            where:{
+                active:1,
+                id:orderId,
+                customerId:customerId
+            }
+         });
+         
+         res.status(200).send({
+            success: true,
+            data: orderItems,
+            message: CONSTANTS.MESSAGES.ORDER_DELETED
+        });
+
+    } catch(err) {
+        console.log(CATCH_MESSAGES.DELETE_ORDER, err);
+        res.status(400).send({
+            success:false,
+            message:CONSTANTS.MESSAGES.INVALID_ORDER_ID
         });
     }
 }
@@ -197,5 +346,6 @@ module.exports = {
     uploadBook,
     listSellerBooks,
     listAllBooks,
-    createOrder
+    createOrder,
+    deleteOrder
 }
