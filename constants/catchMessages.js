@@ -4,4 +4,5 @@ module.exports = {
     LIST_ALL_BOOKS:"Store Controller, ListAllBooks Function ",
     CREATE_ORDER:"Store Controller, CreateOrder function. ",   
     DELETE_ORDER:"Store Controller, DeleteOrder function. ",
+    GET_ORDERS:"User Controller, getOrders function ",
 }

@@ -1,7 +1,14 @@
+const {Sequelize} = require('sequelize');
 const bcrypt = require('bcryptjs');
 const CONSTANTS = require("../constants/constants");
 const CATCH_MESSAGES = require('../constants/catchMessages');
-const userModel = require("../models/userModel");
+const sequelize = require('../utils/database');
+
+const bookModel = require('../models/bookModel');
+const userModel = require('../models/userModel');
+const orderModel = require('../models/orderModel');
+const orderItemsModel = require('../models/orderItemsModel');
+
 const {createAuthentication} = require('../middlewares/auth');
 
 //Common signup for seller and customer
@@ -105,9 +112,46 @@ const signUp = async (req, res, next) => {
           });
       }
 }
+
+const getOrders = async (req,res,next) => {
+  try {
+      const customerId = req.body.id;
+
+      const orderDetails = await sequelize.query(`select orders.id as 'orderId', orders.customerId as 'customerId',orders.createdAt,
+      orderitems.bookId as 'BookId', orderitems.qty as 'BookQuantity',
+      books.bookTitle,books.category,books.bookAuthor,
+      books.bookImage,books.bookISBN,books.bookPrice
+      from orders 
+      INNER JOIN orderitems
+      on orders.id = orderitems.orderId
+      INNER JOIN books
+      on books.id = orderitems.bookId
+      inner join users
+      on users.id = orders.customerId
+      where customerId = ${customerId} AND orders.active = 1`,{
+        replacements: {customerId: customerId},
+        type: sequelize.QueryTypes.SELECT,
+        raw:true  
+      });      
+      
+      res.status(200).send({
+        success: true,
+        data: orderDetails,
+        message:CONSTANTS.MESSAGES.ORDER_LISTED,
+      });     
+     
+  } catch (error) {
+      console.log(CATCH_MESSAGES.GET_ORDERS, error);
+      res.status(400).send({
+          success: false,
+          message: CONSTANTS.MESSAGES.FAILED_TO_LIST_ORDERS
+      });
+  }
+}
   
 
 module.exports = {
     signUp,
-    signIn
+    signIn,
+    getOrders
 }

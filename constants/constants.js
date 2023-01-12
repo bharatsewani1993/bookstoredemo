@@ -23,6 +23,8 @@ module.exports = {
         ORDER_CREATED:"Order created successfully.",
         INVALID_ORDER_ID:"Invalid order Id.",
         ORDER_DELETED:"Order Deleted successfully",
+        FAILED_TO_LIST_ORDERS:"Failed to list order details.",
+        ORDER_LISTED:"Order details listed successfully",
     },
 
     ROLE:{      
