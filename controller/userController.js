@@ -3,11 +3,8 @@ const bcrypt = require('bcryptjs');
 const CONSTANTS = require("../constants/constants");
 const CATCH_MESSAGES = require('../constants/catchMessages');
 const sequelize = require('../utils/database');
-
-const bookModel = require('../models/bookModel');
 const userModel = require('../models/userModel');
-const orderModel = require('../models/orderModel');
-const orderItemsModel = require('../models/orderItemsModel');
+
 
 const {createAuthentication} = require('../middlewares/auth');
 
@@ -17,8 +14,7 @@ const signUp = async (req, res, next) => {
       const firstName = req.body.firstName;    
       const lastName = req.body.lastName;        
       const email = req.body.email;
-      const phoneNumber = req.body.phoneNumber;      
-      const termsAndCondition = req.body.termsAndCondition;
+      const phoneNumber = req.body.phoneNumber;   
       const role = req.body.role;
       let password = req.body.password;   
 
@@ -28,8 +24,7 @@ const signUp = async (req, res, next) => {
         firstName: firstName,
         lastName: lastName,
         email: email,
-        phoneNumber: phoneNumber,
-        termsAndCondition: termsAndCondition,
+        phoneNumber: phoneNumber,        
         password: password,
         role:role
       };
@@ -115,7 +110,7 @@ const signUp = async (req, res, next) => {
 
 const getOrders = async (req,res,next) => {
   try {
-      const customerId = req.body.id;
+      const customerId = req.body.decoded.id;
 
       const orderDetails = await sequelize.query(`select orders.id as 'orderId', orders.customerId as 'customerId',orders.createdAt,
       orderitems.bookId as 'BookId', orderitems.qty as 'BookQuantity',

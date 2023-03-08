@@ -3,7 +3,7 @@ module.exports = {
     PORT: 3000,
     DATABASE_NAME: 'bookstore',
     DATABASE_USER: 'root',
-    DATABASE_PASSWORD: 'Qwerty@123',
+    // DATABASE_PASSWORD: 'Qwerty@123',
     DATABASE_HOST: 'localhost',
     LOGGING: false,
     DIALECT: 'mysql',

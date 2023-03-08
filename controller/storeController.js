@@ -9,7 +9,7 @@ const CATCH_MESSAGES = require('../constants/catchMessages');
 //upload book
 const uploadBook = async (req, res, next) => {
     try {
-        const sellerId = req.body.id; 
+        const sellerId = req.body.decoded.id; 
         const bookTitle = req.body.bookTitle;
         const bookAuthor = req.body.bookAuthor;
         const bookPrice = req.body.bookPrice;
@@ -48,7 +48,7 @@ const uploadBook = async (req, res, next) => {
 //list books of seller
 const listSellerBooks = async (req,res,next) =>{
     try {
-        const sellerId = req.body.id; 
+        const sellerId = req.body.decoded.id;
         let allBooks = await bookModel.findAll({
             where:{
                 sellerId: sellerId,
@@ -129,7 +129,7 @@ const listAllBooks = async (req,res,next) =>{
 //create order
 const createOrder = async (req,res,next) =>{
     try{
-        const customerId = req.body.id;
+        const customerId = req.body.decoded.id;
         const orderDetails = req.body.orderDetails;
 
         let bookIdArr = [];
@@ -233,7 +233,7 @@ const createOrder = async (req,res,next) =>{
 
 const deleteOrder = async (req,res,next) => {
     try {
-        const customerId = req.body.id;
+        const customerId = req.body.decoded.id;
         const orderId = req.body.orderId;
 
         //verify if order belongs to loggedIN customer or not.

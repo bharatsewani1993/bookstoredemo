@@ -26,10 +26,10 @@ const validateAuth = (roleArr) => (req, res, next) => {
                 });
             }
             try {
-                const decoded = jwt.verify(token, ENV.JWT_SECRET_KEY);
-                req.body.id = decoded.id; 
-                req.body.role = decoded.role; 
-                if(roleArr.includes(req.body.role)) { 
+                const decoded = jwt.verify(token, ENV.JWT_SECRET_KEY);                              
+                req.body.decoded = decoded;
+                               
+                if(roleArr.includes(req.body.decoded.role)) { 
                     return next();      
                 } else {
                     const error = new Error(CONSTANTS.MESSAGES.INVALID_CREDENTIALS);
